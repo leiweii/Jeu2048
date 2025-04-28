@@ -1,80 +1,92 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
     text-align: center;
-    background: #faf8ef;
+    background: url('assets/images/background.jpg') no-repeat center center fixed;
+    background-size: cover;
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    color: #ffffff;
+}
+
+header {
+    margin-top: 20px;
+}
+
+.logo {
+    width: 80px;
+    margin-top: 10px;
 }
 
 h1 {
-    font-size: 48px;
-    margin-bottom: 10px;
+    margin: 10px 0;
+    font-size: 3em;
 }
 
-#score {
-    font-size: 24px;
+#score-container {
+    margin: 20px 0;
+    font-size: 1.5em;
+}
+
+#menu {
     margin-bottom: 20px;
+}
+
+#menu button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 1em;
+    border: none;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
 .game-container {
     width: 400px;
     height: 400px;
-    background: #bbada0;
+    background: rgba(255,255,255,0.2);
+    margin: 20px auto;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    grid-gap: 10px;
-    margin: 0 auto;
+    gap: 5px;
     padding: 10px;
-    border-radius: 10px;
-    position: relative;
+    border-radius: 15px;
 }
 
 .tile {
-    width: 90px;
-    height: 90px;
-    background: #cdc1b4;
-    font-size: 28px;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
     font-weight: bold;
-    line-height: 90px;
-    text-align: center;
-    border-radius: 5px;
-    color: #776e65;
+    border-radius: 10px;
     transition: all 0.2s ease;
-    position: absolute;
 }
 
-.tile.new {
+.tile-new {
     animation: pop 0.3s;
 }
 
 @keyframes pop {
-    0% {
-        transform: scale(0);
-    }
-    100% {
-        transform: scale(1);
-    }
+    0% {transform: scale(0);}
+    100% {transform: scale(1);}
 }
 
-.tile-2 { background: #eee4da; }
-.tile-4 { background: #ede0c8; }
-.tile-8 { background: #f2b179; color: white; }
-.tile-16 { background: #f59563; color: white; }
-.tile-32 { background: #f67c5f; color: white; }
-.tile-64 { background: #f65e3b; color: white; }
-.tile-128 { background: #edcf72; color: white; }
-.tile-256 { background: #edcc61; color: white; }
-.tile-512 { background: #edc850; color: white; }
-.tile-1024 { background: #edc53f; color: white; }
-.tile-2048 { background: #edc22e; color: white; }
+#fireworks {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+}
 
-#restart-btn {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 18px;
-    background-color: #8f7a66;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+footer {
+    margin-top: 30px;
+    font-size: 0.8em;
 }

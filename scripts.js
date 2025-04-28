@@ -1,146 +1,154 @@
 const container = document.getElementById('game-container');
 const scoreDisplay = document.getElementById('score');
-const restartBtn = document.getElementById('restart-btn');
+const bestScoreDisplay = document.getElementById('best-score');
+const newGameBtn = document.getElementById('new-game-btn');
+const switchGridBtn = document.getElementById('switch-grid');
+const fireworks = document.getElementById('fireworks');
 
+let size = 4;
 let board = [];
 let score = 0;
+let bestScore = localStorage.getItem('bestScore') || 0;
 
-// Initialize board
+const moveSound = new Audio('assets/sounds/move.mp3');
+const mergeSound = new Audio('assets/sounds/merge.mp3');
+const winSound = new Audio('assets/sounds/win.mp3');
+const loseSound = new Audio('assets/sounds/lose.mp3');
+
 function initBoard() {
-    board = Array(4).fill().map(() => Array(4).fill(0));
+    board = Array(size).fill().map(() => Array(size).fill(0));
     addRandomTile();
     addRandomTile();
     updateBoard();
 }
 
-// Add a random tile (2 or 4)
 function addRandomTile() {
-    let emptyTiles = [];
-    for (let r = 0; r < 4; r++) {
-        for (let c = 0; c < 4; c++) {
-            if (board[r][c] === 0) {
-                emptyTiles.push({ r, c });
-            }
+    let empty = [];
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            if (board[r][c] === 0) empty.push({ r, c });
         }
     }
-    if (emptyTiles.length > 0) {
-        let { r, c } = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+    if (empty.length > 0) {
+        let { r, c } = empty[Math.floor(Math.random() * empty.length)];
         board[r][c] = Math.random() < 0.9 ? 2 : 4;
     }
 }
 
-// Update the board view
 function updateBoard() {
     container.innerHTML = '';
-    for (let r = 0; r < 4; r++) {
-        for (let c = 0; c < 4; c++) {
-            if (board[r][c] !== 0) {
-                const tile = document.createElement('div');
-                tile.classList.add('tile', 'tile-' + board[r][c]);
-                tile.innerText = board[r][c];
-                tile.style.top = `${r * 100}px`;
-                tile.style.left = `${c * 100}px`;
-                tile.classList.add('new');
-                container.appendChild(tile);
+    container.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+    board.forEach((row, r) => {
+        row.forEach((value, c) => {
+            const tile = document.createElement('div');
+            tile.className = 'tile';
+            if (value !== 0) {
+                tile.textContent = value;
+                tile.classList.add('tile-new');
             }
-        }
-    }
-    scoreDisplay.innerText = "Score : " + score;
+            container.appendChild(tile);
+        });
+    });
+    scoreDisplay.textContent = score;
+    bestScoreDisplay.textContent = bestScore;
 }
 
-// Handle swipe
-function move(dir) {
-    let rotated = rotateBoard(dir);
-    let moved = false;
-
-    for (let r = 0; r < 4; r++) {
-        let row = rotated[r].filter(val => val);
-        for (let i = 0; i < row.length - 1; i++) {
-            if (row[i] === row[i + 1]) {
-                row[i] *= 2;
-                score += row[i];
-                row[i + 1] = 0;
+function slide(row) {
+    let arr = row.filter(val => val);
+    for (let i = 0; i < arr.length - 1; i++) {
+        if (arr[i] === arr[i + 1]) {
+            arr[i] *= 2;
+            score += arr[i];
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('bestScore', bestScore);
             }
+            arr[i + 1] = 0;
+            mergeSound.play();
         }
-        row = row.filter(val => val);
-        while (row.length < 4) {
-            row.push(0);
-        }
-        rotated[r] = row;
     }
-
-    let newBoard = rotateBoardBack(rotated, dir);
-
-    if (JSON.stringify(board) !== JSON.stringify(newBoard)) {
-        board = newBoard;
-        moved = true;
+    arr = arr.filter(val => val);
+    while (arr.length < size) {
+        arr.push(0);
     }
+    return arr;
+}
+
+function move(direction) {
+    let rotated = board;
+    if (direction === 'up') rotated = transpose(rotated);
+    if (direction === 'down') rotated = transpose(rotated).map(row => row.reverse());
+    if (direction === 'right') rotated = rotated.map(row => row.reverse());
+
+    let moved = false;
+    rotated = rotated.map(row => {
+        const original = [...row];
+        const newRow = slide(row);
+        if (JSON.stringify(original) !== JSON.stringify(newRow)) moved = true;
+        return newRow;
+    });
+
+    if (direction === 'up') rotated = transpose(rotated);
+    if (direction === 'down') rotated = transpose(rotated).map(row => row.reverse());
+    if (direction === 'right') rotated = rotated.map(row => row.reverse());
+
+    board = rotated;
 
     if (moved) {
+        moveSound.play();
         addRandomTile();
         updateBoard();
+        checkVictory();
         checkGameOver();
     }
 }
 
-// Rotate board based on direction
-function rotateBoard(dir) {
-    let newBoard = board.map(row => [...row]);
-    if (dir === 'up') {
-        newBoard = transpose(newBoard);
-    } else if (dir === 'down') {
-        newBoard = transpose(newBoard).map(row => row.reverse());
-    } else if (dir === 'right') {
-        newBoard = newBoard.map(row => row.reverse());
-    }
-    return newBoard;
-}
-
-// Rotate back
-function rotateBoardBack(rotated, dir) {
-    let newBoard = rotated.map(row => [...row]);
-    if (dir === 'up') {
-        newBoard = transpose(newBoard);
-    } else if (dir === 'down') {
-        newBoard = transpose(newBoard.map(row => row.reverse()));
-    } else if (dir === 'right') {
-        newBoard = newBoard.map(row => row.reverse());
-    }
-    return newBoard;
-}
-
-// Transpose matrix
 function transpose(matrix) {
     return matrix[0].map((_, i) => matrix.map(row => row[i]));
 }
 
-// Check if game is over
-function checkGameOver() {
-    for (let r = 0; r < 4; r++) {
-        for (let c = 0; c < 4; c++) {
-            if (board[r][c] === 0) return;
-            if (r < 3 && board[r][c] === board[r + 1][c]) return;
-            if (c < 3 && board[r][c] === board[r][c + 1]) return;
+function checkVictory() {
+    for (let row of board) {
+        for (let tile of row) {
+            if (tile === 2048) {
+                fireworks.innerHTML = '<h1>✨ Bravo 2048 ! ✨</h1>';
+                fireworks.style.display = 'block';
+                winSound.play();
+                setTimeout(() => fireworks.style.display = 'none', 3000);
+                return;
+            }
         }
     }
-    setTimeout(() => {
-        alert('Game Over! Your score: ' + score);
-    }, 100);
 }
 
-// Listen for key events
-window.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowUp') move('up');
-    if (e.key === 'ArrowDown') move('down');
-    if (e.key === 'ArrowLeft') move('left');
-    if (e.key === 'ArrowRight') move('right');
-});
+function checkGameOver() {
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            if (board[r][c] === 0) return;
+            if (r < size - 1 && board[r][c] === board[r + 1][c]) return;
+            if (c < size - 1 && board[r][c] === board[r][c + 1]) return;
+        }
+    }
+    loseSound.play();
+    setTimeout(() => alert("Game Over!"), 200);
+}
 
-// Restart button
-restartBtn.addEventListener('click', () => {
+newGameBtn.addEventListener('click', () => {
     score = 0;
     initBoard();
 });
 
-// Start the game
+switchGridBtn.addEventListener('click', () => {
+    size = size === 4 ? 5 : 4;
+    score = 0;
+    initBoard();
+});
+
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') move('left');
+    else if (e.key === 'ArrowRight') move('right');
+    else if (e.key === 'ArrowUp') move('up');
+    else if (e.key === 'ArrowDown') move('down');
+});
+
 initBoard();

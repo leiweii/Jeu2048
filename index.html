@@ -1,15 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>2048 Game</title>
+    <title>Jeu 2048 Nature</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
 </head>
 <body>
-    <h1>2048</h1>
-    <div id="score">Score : 0</div>
-    <div id="game-container" class="game-container"></div>
-    <button id="restart-btn">Recommencer</button>
+    <header>
+        <img src="assets/images/logo.png" alt="Jeu 2048 Nature" class="logo">
+        <h1>2048 - Nature Edition</h1>
+        <div id="score-container">
+            <div>Score : <span id="score">0</span></div>
+            <div>Record : <span id="best-score">0</span></div>
+        </div>
+    </header>
+
+    <section id="menu">
+        <button id="new-game-btn">Nouvelle Partie</button>
+        <button id="switch-grid">Grille 4x4 / 5x5</button>
+        <button id="instructions-btn">Instructions</button>
+    </section>
+
+    <div class="game-container" id="game-container"></div>
+
+    <div id="fireworks" style="display:none;"></div>
+
+    <footer>
+        <p>Jeu inspiré de 2048 - Version Nature créée par Leiweii.</p>
+    </footer>
 
     <script src="script.js"></script>
 </body>
